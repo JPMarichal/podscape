@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Post de Podcast</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: #f0f2f5; /* Facebook-like background */
+            color: #1c1e21; /* Facebook text color */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for longer content */
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 680px; /* Typical content width */
+            width: 100%;
+            background: #fff; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.1);
+            margin-top: 20px; /* Space from top */
+            margin-bottom: 20px; /* Space from bottom */
+        }
+        h1 { 
+            color: #1877f2; /* Facebook blue */
+            text-align: center; 
+            font-size: 1.8em;
+            margin-bottom: 25px;
+        }
+        .post-area { 
+            margin-top: 20px; 
+            border-top: 1px solid #dddfe2; /* Separator */
+            padding-top: 20px;
+        }
+        h2 { 
+            font-size: 1.3em; 
+            margin-bottom: 12px; 
+            color: #050505; /* Darker text for headings */
+        }
+        .post-image-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .post-image { 
+            max-width: 100%; 
+            max-height: 300px; /* Limit image height */
+            height: auto; 
+            border-radius: 8px; 
+            border: 1px solid #dddfe2; /* Light border for image */
+            object-fit: cover; /* Ensures image covers area nicely */
+        }
+        textarea#socialPostOutput { 
+            width: calc(100% - 22px); /* Full width minus padding and border */
+            min-height: 180px; 
+            padding: 10px; 
+            border: 1px solid #ccd0d5; 
+            border-radius: 6px; 
+            font-size: 0.95em; 
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word; 
+            background-color: #f5f6f7; /* Light background for textarea */
+            color: #1c1e21;
+            resize: vertical; /* Allow vertical resize */
+        }
+        .button-container { 
+            text-align: center; 
+            margin-top: 25px; 
+            display: flex;
+            gap: 10px; /* Space between buttons */
+            justify-content: center;
+        }
+        button { 
+            background-color: #1877f2; /* Facebook blue */
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.2s ease-in-out;
+        }
+        button:hover { 
+            background-color: #166fe5; /* Darker blue on hover */
+        }
+        .refresh-button { 
+            background-color: #42b72a; /* Green for refresh/new */
+        }
+        .refresh-button:hover { 
+            background-color: #36a420; 
+        }
+        .message-feedback { 
+            padding: 10px 15px; 
+            margin-top: 15px; 
+            border-radius: 6px; 
+            text-align: center; 
+            font-size: 0.9em;
+        }
+        .success-message { 
+            background-color: #e9f5ec; /* Light green */
+            color: #34a853; 
+            border: 1px solid #c8e6c9; 
+        }
+        .error-message { 
+            background-color: #fce8e6; /* Light red */
+            color: #ea4335; 
+            border: 1px solid #f5c6cb; 
+        }
+        .episode-direct-link { 
+            display: block; 
+            text-align: center; 
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e7f3ff; /* Light blue background */
+            border-radius: 6px;
+            color: #1877f2;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .episode-direct-link:hover {
+            background-color: #dcebff;
+            text-decoration: underline;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .container { padding: 15px; margin-top: 10px; margin-bottom: 10px;}
+            h1 { font-size: 1.5em; }
+            h2 { font-size: 1.15em; }
+            button { font-size: 0.9em; padding: 8px 15px; }
+            .button-container { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ post_title if post_title != "Error" else "Generador de Posts para Redes Sociales" }}</h1>
+
+        {% if error_message %}
+            <div class="message-feedback error-message">{{ error_message }}</div>
+        {% endif %}
+
+        <div class="post-area">
+            {% if image_url and not error_message %}
+                <h2>Imagen Sugerida:</h2>
+                <div class="post-image-container">
+                    <img src="{{ image_url }}" alt="Imagen del episodio: {{ post_title }}" class="post-image">
+                </div>
+            {% elif not error_message %}
+                {% endif %}
+
+            <h2>Post Sugerido para Copiar:</h2>
+            <textarea id="socialPostOutput" readonly>{{ formatted_post if not error_message else "No se pudo generar el post." }}</textarea>
+            
+            <div class="button-container">
+                <button onclick="copyToClipboard()" id="copyButton" {% if error_message %}disabled{% endif %}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; margin-right: 5px;">
+                        <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                        <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                    </svg>
+                    Copiar Post
+                </button>
+                <button onclick="window.location.reload()" class="refresh-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; margin-right: 5px;">
+                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                    </svg>
+                    Generar Nuevo
+                </button>
+            </div>
+            <div id="copyFeedbackMessage" class="message-feedback" style="display:none;"></div>
+        </div>
+        
+        {% if episode_link and not error_message %}
+            <a href="{{ episode_link }}" target="_blank" class="episode-direct-link">🎧 Escuchar este episodio</a>
+        {% endif %}
+    </div>
+
+    <script>
+        function copyToClipboard() {
+            const textarea = document.getElementById('socialPostOutput');
+            const copyButton = document.getElementById('copyButton');
+            
+            // Ensure text is selectable if it was previously disabled or readonly in a way that prevents selection
+            textarea.focus(); // Focus to help with selection
+            textarea.select(); // Selects the text content of a textarea
+            
+            // For mobile devices, setSelectionRange can be helpful
+            textarea.setSelectionRange(0, textarea.value.length); 
+
+            const feedbackDiv = document.getElementById('copyFeedbackMessage');
+            try {
+                // Using document.execCommand('copy') for broader compatibility,
+                // especially in iframes or older browsers.
+                var successful = document.execCommand('copy');
+                var msg = successful ? '¡Post copiado al portapapeles!' : 'No se pudo copiar el post. Intenta manualmente.';
+                
+                feedbackDiv.textContent = msg;
+                feedbackDiv.className = successful ? 'message-feedback success-message' : 'message-feedback error-message';
+                
+                // Change button text temporarily
+                if(successful) {
+                    const originalButtonText = copyButton.innerHTML;
+                    copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16" style="vertical-align: middle; margin-right: 5px;"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/></svg>¡Copiado!';
+                    setTimeout(() => {
+                        copyButton.innerHTML = originalButtonText;
+                    }, 2000);
+                }
+
+            } catch (err) {
+                console.error('Error al intentar copiar el texto: ', err);
+                feedbackDiv.textContent = 'Error al copiar. Por favor, copia el texto manualmente.';
+                feedbackDiv.className = 'message-feedback error-message';
+            }
+            
+            feedbackDiv.style.display = 'block';
+            setTimeout(() => {
+                feedbackDiv.style.display = 'none';
+            }, 3000);
+
+            // Deselect text after copying
+            if (window.getSelection) {
+                window.getSelection().removeAllRanges();
+            } else if (document.selection) {
+                document.selection.empty();
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+
+version: '3.8'
+
+services:
+  podcast-post-generator:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - .:/app
+      # Evitamos montar los directorios de caché de Python
+      - /app/__pycache__
+      - /app/.mypy_cache
+      - /app/.pytest_cache
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1  # Evita archivos .pyc
+    working_dir: /app
+    restart: unless-stopped
+    # Aseguramos que el contenedor tenga suficientes permisos
+    user: "${UID:-1000}:${GID:-1000}"
+    # Configuración de red
+    networks:
+      - app-network
+    # Health check para verificar que la aplicación esté respondiendo
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+networks:
+  app-network:
+    driver: bridge
