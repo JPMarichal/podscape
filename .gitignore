@@ -30,8 +30,8 @@ ENV/
 
 # Environment variables
 # .env
-#.env.*
-!.env.example
+# .env.*
+# !.env.example
 
 # Docker
 .dockerignore
@@ -97,7 +97,7 @@ local_settings.py
 .cache/
 
 # Environment
-.env
+# .env
 
 # Logs
 logs/
