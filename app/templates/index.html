@@ -155,8 +155,7 @@
                 <div class="post-image-container">
                     <img src="{{ image_url }}" alt="Imagen del episodio: {{ post_title }}" class="post-image">
                 </div>
-            {% elif not error_message %}
-                {% endif %}
+            {% endif %}
 
             <h2>Post Sugerido para Copiar:</h2>
             <textarea id="socialPostOutput" readonly>{{ formatted_post if not error_message else "No se pudo generar el post." }}</textarea>

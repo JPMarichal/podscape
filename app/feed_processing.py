@@ -12,11 +12,18 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class SpreakerFeedParser(FeedDataProvider):
-    """
-    A concrete implementation of FeedDataProvider for parsing Spreaker RSS feeds.
-    """
-    def __init__(self, feed_url: str):
+    """Parse Spreaker RSS feeds and provide podcast items."""
+
+    DEFAULT_HEADERS = {
+        "User-Agent": (
+            "PodcastPostGenerator/1.0 "
+            "(https://github.com/your-org/podcast-post-generator)"
+        )
+    }
+
+    def __init__(self, feed_url: str, http_headers: Optional[dict] | None = None):
         self.feed_url = feed_url
+        self.http_headers = http_headers or self.DEFAULT_HEADERS
 
     async def get_all_items(self) -> List[PodcastItemDTO]:
         """
@@ -25,9 +32,9 @@ class SpreakerFeedParser(FeedDataProvider):
         """
         items: List[PodcastItemDTO] = []
         try:
-            async with httpx.AsyncClient(timeout=15.0) as client: # Increased timeout
+            async with httpx.AsyncClient(timeout=15.0) as client:  # Increased timeout
                 logger.info(f"Fetching feed from: {self.feed_url}")
-                response = await client.get(self.feed_url)
+                response = await client.get(self.feed_url, headers=self.http_headers)
                 response.raise_for_status() # Raise an HTTPStatusError for bad responses (4xx or 5xx)
                 feed_content = response.text
             
